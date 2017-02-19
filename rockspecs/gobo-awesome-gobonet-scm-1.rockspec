@@ -13,6 +13,7 @@ dependencies = {}
 build = {
    type = "builtin",
    modules = {
-      ["gobo.awesome.gobonet"] = "gobo/awesome/gobonet.lua"
+      ["gobo.awesome.gobonet"] = "gobo/awesome/gobonet.lua",
+      ["gobo.awesome.gobonet.core"] = "gobo/awesome/gobonet/core.c",
    }
 }
