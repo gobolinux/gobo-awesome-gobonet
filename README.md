@@ -9,6 +9,18 @@ Requirements
 * Awesome 3.5+
 * [GoboNet](http://github.com/gobolinux/GoboNet)
 
+Installing
+----------
+
+The easiest way to install it is via [LuaRocks](https://luarocks.org):
+
+
+```
+luarocks install gobo-awesome-gobonet
+```
+
+But you also have to edit your theme to add icons, see below.
+
 Themeing
 --------
 
