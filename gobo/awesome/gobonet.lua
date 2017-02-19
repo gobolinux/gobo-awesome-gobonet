@@ -260,7 +260,6 @@ function gobonet.new()
       entries.theme = { height = 24, width = len }
       compact_entries(entries)
       menu = awful.menu.new(entries)
-      menu.wibox:connect_signal("mouse::leave", function() menu:hide() end)
       menu:show({ coords = coords })
    end
    
