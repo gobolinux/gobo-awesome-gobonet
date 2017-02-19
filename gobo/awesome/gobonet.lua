@@ -152,9 +152,12 @@ function gobonet.new()
       pidfd:close()
       local statfilename = "/proc/"..pid.."/stat"
       local statfd = io.open(statfilename, "r")
-      if not statfd then return false end
+      if not statfd then
+         os.remove(pidfilename)
+         return false
+      end
       statfd:close()
-      is_scanning = animated_operation { command = "bash -c 'while [ -e \""..statfilename.."\" ]; do sleep 0.5; done; rm \""..pidfilename.."\"'" } ()
+      is_scanning = animated_operation { command = "bash -c 'while grep -q gobonet \""..statfilename.."\"; do sleep 0.5; done; rm \""..pidfilename.."\"'" } ()
       return true
    end
 
@@ -163,14 +166,26 @@ function gobonet.new()
    local function connect(essid)
       return animated_operation { command = "gobonet connect '"..essid:gsub("'", "'\\''").."'" } ()
    end
+
+   local function autoconnect()
+      return animated_operation { command = "gobonet autoconnect" } ()
+   end
    
+   local last_update = os.time()
    local function update()
-      if is_scanning() or is_connecting() then -- or is_external_scanning() then
+      local prev_update = last_update
+      last_update = os.time()
+      if is_scanning() or is_connecting() or is_external_scanning() then
          return
       end
       local wifi_level = read_wifi_level()
       if not wifi_level then
          widget:set_image(beautiful.wifi_down_icon)
+         -- A long time elapsed between updates probably means
+         -- the computer went asleep. Let's try to autoconnect.
+         if last_update - prev_update > 10 then
+            is_connecting = autoconnect()
+         end
       else
          local quality = (tonumber(wifi_level) / 70) * 100
          widget:set_image(quality_icon(quality))
