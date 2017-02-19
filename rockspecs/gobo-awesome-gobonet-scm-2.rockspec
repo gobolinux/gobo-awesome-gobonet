@@ -1,5 +1,5 @@
 package = "gobo-awesome-gobonet"
-version = "scm-1"
+version = "scm-2"
 source = {
    url = "git+https://github.com/gobolinux/gobo-awesome-gobonet.git"
 }
