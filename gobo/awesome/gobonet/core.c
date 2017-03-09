@@ -20,6 +20,7 @@ int up_and_running(lua_State* L) {
    req.ifr_name[IFNAMSIZ-1] = '\0';
    int fd = socket(PF_INET6, SOCK_DGRAM, 0);
    int ok = ioctl(fd, SIOCGIFFLAGS, &req);
+   close(fd);
    if (ok != 0) {
       lua_pushstring(L, strerror(errno));
       lua_error(L);
