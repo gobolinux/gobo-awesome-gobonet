@@ -96,7 +96,7 @@ function gobonet.new()
       end
    end
 
-   if not wlan_interface then
+   if not (wlan_interface or wired_interface) then
       return widget
    end
    
@@ -206,7 +206,11 @@ function gobonet.new()
       end
       local wifi_level = read_wifi_level()
       if not wifi_level then
-         widget:set_image(beautiful.wifi_down_icon)
+         if wlan_interface then
+            widget:set_image(beautiful.wifi_down_icon)
+         else
+            widget:set_image(beautiful.wired_down_icon)
+         end
          -- A long time elapsed between updates probably means
          -- the computer went asleep. Let's try to autoconnect.
          if last_update - prev_update > 10 then
