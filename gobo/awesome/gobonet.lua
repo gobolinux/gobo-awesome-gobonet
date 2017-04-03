@@ -12,6 +12,7 @@ local core = require("gobo.awesome.gobonet.core")
 
 local wlan_interface
 local wired_interface
+local wired_connected = false
 
 local function pread(cmd)
    local pd = io.popen(cmd, "r")
@@ -189,6 +190,11 @@ function gobonet.new()
    local function connect_wired()
       return animated_operation { command = "gobonet connect_wired", frames = { beautiful.wired_up_icon, beautiful.wired_down_icon } } ()
    end
+
+   local function add_disconnect_entry(entries, name)
+      local disconnect_msg = is_connecting() and " Cancel connecting to " or " Disconnect "
+      table.insert(entries, 1, { disconnect_msg .. name, function() disconnect() end })
+   end
    
    local last_update = os.time()
    local function update()
@@ -200,8 +206,11 @@ function gobonet.new()
       if wired_interface then
          local pok, up, running = pcall(core.up_and_running, wired_interface)
          if pok and up and running then
+            wired_connected = true
             widget:set_image(beautiful.wired_up_icon)
             return
+         else
+            wired_connected = false
          end
       end
       local wifi_level = read_wifi_level()
@@ -270,10 +279,12 @@ function gobonet.new()
       table.sort(entries, function(a,b) 
          return (a.quality or 0) > (b.quality or 0)
       end)
+      local wired_display_name = "Wired network ("..tostring(wired_interface)..") "
       if my_essid then
-         local disconnect_msg = is_connecting() and " Cancel connecting to " or " Disconnect "
-         table.insert(entries, 1, { disconnect_msg .. my_essid, function() disconnect() end })
+         add_disconnect_entry(entries, my_essid)
          table.insert(entries, 2, { " Forget " .. my_essid, function() forget(my_essid) end })
+      elseif wired_connected then
+         add_disconnect_entry(entries, wired_display_name)
       end
       if is_scanning() then
          table.insert(entries, { " Scanning..." })
@@ -284,7 +295,9 @@ function gobonet.new()
          table.insert(entries, { " Rescan", function() is_scanning = rescan() end } )
       end
       if wired_interface then
-         table.insert(entries, 1, { " Wired network ("..wired_interface..") ", function() connect_wired() end, beautiful.wired_up_icon })
+         table.insert(entries, 1, { " " .. wired_display_name,
+                      function() is_connecting = connect_wired() end,
+                      beautiful.wired_up_icon })
       end
       local len = 10
       for _, entry in ipairs(entries) do
