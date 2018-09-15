@@ -260,7 +260,7 @@ function gobonet.new()
             end
             curr_entry = { [1] = " " .. value:gsub(" ", "") }
          elseif key == "ESSID" then
-            local essid = value:match('^"(.*)"$')
+            local essid = value:match('^"(.*)"$'):gsub("\\x00", "")
             if essid ~= "" then
                local label = " " .. essid
                curr_entry[1] = label
