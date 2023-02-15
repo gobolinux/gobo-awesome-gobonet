@@ -14,6 +14,14 @@ local wlan_interface
 local wired_interface
 local wired_connected = false
 
+local function unescape_essid(essid)
+   if not essid then
+      return nil
+   end
+   return essid:gsub("\\x00", "")
+               :gsub("\\x(..)", function(sn) return string.char(tonumber("0x" .. sn)) end)
+end
+
 local function pread(cmd)
    local pd = io.popen(cmd, "r")
    if not pd then
@@ -246,7 +254,7 @@ function gobonet.new()
          end
       end
       local iwconfig = pread("iwconfig")
-      local my_essid = iwconfig:match('ESSID:"([^\n]*)"%s*\n')
+      local my_essid = unescape_essid(iwconfig:match('ESSID:"([^\n]*)"%s*\n'))
       local scan = ""
       if not is_scanning() then
          scan = pread("gobonet_backend quick-scan "..wlan_interface)
@@ -260,7 +268,8 @@ function gobonet.new()
             end
             curr_entry = { [1] = " " .. value:gsub(" ", "") }
          elseif key == "ESSID" then
-            local essid = value:match('^"(.*)"$'):gsub("\\x00", "")
+            local essid = unescape_essid(value:match('^"(.*)"$'))
+
             if essid ~= "" then
                local label = " " .. essid
                curr_entry[1] = label
